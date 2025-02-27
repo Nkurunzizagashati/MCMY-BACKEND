@@ -4,7 +4,7 @@ import userRouter from './user.js';
 
 const router = express.Router();
 
-router.use('/artifact', artifactRouter);
-router.use('/user', userRouter);
+router.use('/artifacts', artifactRouter);
+router.use('/users', userRouter);
 
 export default router;

@@ -1,8 +1,8 @@
 import { matchedData, validationResult } from 'express-validator';
 import mongoose from 'mongoose';
-import Admin from '../models/admin.js';
 import { comparePasswords, hashPassword } from '../utils/helpers.js';
-import { generateJWTauthToken } from '../utils/authTokens.js';
+import User from '../models/user.js';
+import { generateJWTauthToken } from '../utils/authToken.js';
 
 const registerUser = async (req, res) => {
 	try {

@@ -7,9 +7,18 @@ import {
 // Controller for adding an artifact
 export const addArtifact = async (req, res) => {
 	try {
-		console.log('Received files:', req.files);
-
-		const { name, description, category } = req.body;
+		const {
+			title_kin,
+			title_en,
+			description_kin,
+			description_en,
+			origin_kin,
+			origin_en,
+			materials_kin,
+			materials_en,
+			usage_kin,
+			usage_en,
+		} = req.body;
 
 		// Validate file existence
 		if (!req.files || !req.files.image || !req.files.model3D) {
@@ -37,12 +46,20 @@ export const addArtifact = async (req, res) => {
 
 		// Save artifact to database
 		const newArtifact = new Artifact({
-			name,
-			description,
-			category, // Ensure category is included
+			title_kin,
+			title_en,
+			description_kin,
+			description_en,
+			origin_kin,
+			origin_en,
+			materials_kin,
+			materials_en,
+			usage_kin,
+			usage_en,
 			image: imageUrl,
 			model3D: model3DUrl,
 		});
+
 		await newArtifact.save();
 
 		res.status(201).json(newArtifact);

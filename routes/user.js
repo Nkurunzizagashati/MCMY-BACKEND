@@ -1,5 +1,9 @@
 import express from 'express';
-import { loginUser, registerUser } from '../controllers/user.js';
+import {
+	loginUser,
+	registerUser,
+	verifyAccount,
+} from '../controllers/user.js';
 import { checkSchema } from 'express-validator';
 import {
 	loginUserValidator,
@@ -14,5 +18,6 @@ router.post(
 	registerUser
 );
 router.post('/login', checkSchema(loginUserValidator), loginUser);
+router.post('/verify', verifyAccount);
 
 export default router;

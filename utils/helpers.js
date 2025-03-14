@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import nodemailer from 'nodemailer';
 
 const hashPassword = async (password) => {
 	const salt = await bcrypt.genSalt(10);
@@ -54,4 +55,28 @@ const getLoggedInUser = async (req) => {
 	}
 };
 
-export { hashPassword, comparePasswords, getLoggedInUser };
+const sendEmail = async (receiverEmail, message, subject) => {
+	try {
+		const transporter = nodemailer.createTransport({
+			service: 'gmail',
+			auth: {
+				user: process.env.EMAIL_USER,
+				pass: process.env.EMAIL_PASS,
+			},
+		});
+
+		const mailOptions = {
+			from: 'My Culture My Value org',
+			to: receiverEmail,
+			subject: subject,
+			html: message,
+		};
+
+		const info = await transporter.sendMail(mailOptions);
+		console.log('Email sent: ', info.response);
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+export { hashPassword, comparePasswords, getLoggedInUser, sendEmail };

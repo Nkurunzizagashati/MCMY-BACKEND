@@ -1,5 +1,5 @@
-import Subscriber from '../models/subscriber';
-import { getLoggedInUser } from '../utils/helpers';
+import Subscriber from '../models/subscriber.js';
+import { getLoggedInUser } from '../utils/helpers.js';
 
 const getScubscribers = async (req, res) => {
 	try {

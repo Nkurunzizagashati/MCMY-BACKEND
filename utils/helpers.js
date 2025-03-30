@@ -43,7 +43,12 @@ const getLoggedInUser = async (req) => {
 			throw new Error('Not authorized: User not found');
 		}
 
-		return { user, userId: user._id };
+		console.log('LOGGED IN USER: ', user);
+
+		// const userId = user._id.toString();
+		// return userId;
+
+		return user;
 	} catch (error) {
 		console.error('Error in getLoggedInUser:', error.message);
 

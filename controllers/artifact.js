@@ -3,6 +3,7 @@ import {
 	uploadToCloudinary,
 	uploadFiles,
 } from '../utils/cloudinary.js';
+import { getLoggedInUser } from '../utils/helpers.js';
 
 // Controller for adding an artifact
 export const addArtifact = async (req, res) => {
@@ -25,6 +26,14 @@ export const addArtifact = async (req, res) => {
 			return res
 				.status(400)
 				.json({ message: 'Image and 3D model are required' });
+		}
+
+		const loggedInUser = await getLoggedInUser(req);
+		if (loggedInUser.email !== process.env.SUPER_USER) {
+			return res.status(403).json({
+				message:
+					'You are not authorized to perform this action',
+			});
 		}
 
 		// Upload files to Cloudinary
@@ -64,8 +73,15 @@ export const addArtifact = async (req, res) => {
 
 		res.status(201).json(newArtifact);
 	} catch (error) {
-		console.error('Error:', error);
-		res.status(500).json({ message: error.message });
+		if (error.message.includes('Not authorized')) {
+			return res
+				.status(401)
+				.json({ message: 'Invalid token or not authorized' });
+		} else {
+			return res
+				.status(500)
+				.json({ message: 'Something went wrong' });
+		}
 	}
 };
 
@@ -76,6 +92,100 @@ export const getArtifacts = async (req, res) => {
 		res.status(200).json(artifacts);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
+	}
+};
+
+export const deleteArtifact = async (req, res) => {
+	try {
+		const loggedInUser = await getLoggedInUser();
+		const { artifactId } = req.params;
+		if (loggedInUser.email !== process.env.SUPER_USER) {
+			return res.status(403).json({
+				message:
+					'You are not authorized to perform this action',
+			});
+		}
+
+		await Artifact.findByIdAndDelete(artifactId);
+
+		return res
+			.status(200)
+			.json({ message: 'Artifact deleted successfully!' });
+	} catch (error) {
+		if (error.message.includes('Not authorized')) {
+			return res
+				.status(401)
+				.json({ message: 'Invalid token or not authorized' });
+		} else {
+			return res
+				.status(500)
+				.json({ message: 'Something went wrong' });
+		}
+	}
+};
+
+export const updateArtifact = async (req, res) => {
+	try {
+		const { artifactId } = req.params; // Get artifact ID from request params
+
+		// Find the existing artifact
+		const artifact = await Artifact.findById(artifactId);
+		if (!artifact) {
+			return res
+				.status(404)
+				.json({ message: 'Artifact not found' });
+		}
+
+		// Validate user authorization
+		const loggedInUser = await getLoggedInUser(req);
+		if (loggedInUser.email !== process.env.SUPER_USER) {
+			return res.status(403).json({
+				message:
+					'You are not authorized to perform this action',
+			});
+		}
+
+		// Prepare an object for updating only the provided fields
+		const updatedFields = { ...req.body };
+
+		// Handle optional file uploads
+		if (req.files?.image) {
+			updatedFields.image = await uploadToCloudinary(
+				req.files.image[0].buffer,
+				'artifacts'
+			);
+		}
+		if (req.files?.model3D) {
+			updatedFields.model3D = await uploadToCloudinary(
+				req.files.model3D[0].buffer,
+				'artifacts'
+			);
+		}
+
+		// Update the artifact with only the provided fields
+		const updatedArtifact = await Artifact.findByIdAndUpdate(
+			artifactId,
+			updatedFields,
+			{
+				new: true,
+				runValidators: true,
+			}
+		);
+
+		res.status(200).json({
+			message: 'artifact updated successfully!',
+			artifact: updateArtifact,
+		});
+	} catch (error) {
+		if (error.message.includes('Not authorized')) {
+			return res
+				.status(401)
+				.json({ message: 'Invalid token or not authorized' });
+		} else {
+			return res
+				.status(500)
+				.json({ message: 'Something went wrong' });
+		}
 	}
 };
 

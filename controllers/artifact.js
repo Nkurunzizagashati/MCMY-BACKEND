@@ -97,7 +97,7 @@ export const getArtifacts = async (req, res) => {
 
 export const deleteArtifact = async (req, res) => {
 	try {
-		const loggedInUser = await getLoggedInUser();
+		const loggedInUser = await getLoggedInUser(req);
 		const { artifactId } = req.params;
 		if (loggedInUser.email !== process.env.SUPER_USER) {
 			return res.status(403).json({
@@ -107,6 +107,9 @@ export const deleteArtifact = async (req, res) => {
 		}
 
 		await Artifact.findByIdAndDelete(artifactId);
+
+		const io = req.app.get('io');
+		io.emit('artifactChange', { eventType: 'delete', artifactId });
 
 		return res
 			.status(200)
@@ -127,6 +130,7 @@ export const deleteArtifact = async (req, res) => {
 export const updateArtifact = async (req, res) => {
 	try {
 		const { artifactId } = req.params; // Get artifact ID from request params
+		console.log('REQUEST BODY: ', req.body);
 
 		// Find the existing artifact
 		const artifact = await Artifact.findById(artifactId);
@@ -172,7 +176,10 @@ export const updateArtifact = async (req, res) => {
 			}
 		);
 
-		res.status(200).json({
+		const io = req.app.get('io');
+		io.emit('artifactChange', { eventType: 'delete', artifactId });
+
+		return res.status(200).json({
 			message: 'artifact updated successfully!',
 			artifact: updateArtifact,
 		});

@@ -5,9 +5,19 @@ import createDBConnection from './utils/db.js';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import routes from './routes/index.js';
+import { Server } from 'socket.io';
+import http from 'http';
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+	cors: {
+		origin: 'https://mcmv.f-nkurunziz.workers.dev', // Your frontend URL here
+		methods: ['GET', 'POST'],
+		credentials: true,
+	},
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -15,9 +25,9 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
 	cors({
-		origin: '*',
+		origin: 'https://mcmv.f-nkurunziz.workers.dev',
 		credentials: true,
-		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
 	})
 );
 
@@ -27,6 +37,17 @@ app.get('/api', async (req, res) => {
 	res.send('HELLO FROM WEBWALLET BACKEND');
 });
 
+io.on('connection', (socket) => {
+	console.log('A user connected:', socket.id);
+
+	socket.on('disconnect', () => {
+		console.log('A user disconnected:', socket.id);
+	});
+});
+
+// Attach `io` to `app` so it can be used in controllers
+app.set('io', io);
+
 // Connect to the Database
 
 createDBConnection();
@@ -34,7 +55,7 @@ createDBConnection();
 const PORT = process.env.PORT || 3002;
 
 try {
-	app.listen(PORT, () => {
+	server.listen(PORT, () => {
 		console.log(`Server is running on port ${PORT}`);
 	});
 } catch (error) {

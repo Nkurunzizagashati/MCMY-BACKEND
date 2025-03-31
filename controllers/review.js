@@ -11,7 +11,7 @@ const getReviews = async (req, res) => {
 		// Find reviews for the artifact
 		const reviews = await Review.find({ artifactId })
 			.sort({ createdAt: -1 })
-			.populate('userId', 'fname lname email');
+			.populate('user', 'fname lname email');
 
 		// If no reviews are found
 		if (!reviews || reviews.length === 0) {

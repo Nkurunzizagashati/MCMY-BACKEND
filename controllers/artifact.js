@@ -71,8 +71,12 @@ export const addArtifact = async (req, res) => {
 
 		await newArtifact.save();
 
+		const io = req.app.get('io');
+		io.emit('artifactChange', { eventType: 'delete' });
+
 		res.status(201).json(newArtifact);
 	} catch (error) {
+		console.log(error);
 		if (error.message.includes('Not authorized')) {
 			return res
 				.status(401)
@@ -99,6 +103,7 @@ export const deleteArtifact = async (req, res) => {
 	try {
 		const loggedInUser = await getLoggedInUser(req);
 		const { artifactId } = req.params;
+		console.log('ARTIFACT ID: ', artifactId);
 		if (loggedInUser.email !== process.env.SUPER_USER) {
 			return res.status(403).json({
 				message:
@@ -106,7 +111,14 @@ export const deleteArtifact = async (req, res) => {
 			});
 		}
 
-		await Artifact.findByIdAndDelete(artifactId);
+		const artifactExist = await Artifact.findById(artifactId);
+		console.log('ARTIFACT TO DELETE', artifactExist);
+
+		const deteletedArtifact = await Artifact.findByIdAndDelete(
+			artifactId
+		);
+
+		console.log('DELETED ARTIFACT: ', deteletedArtifact);
 
 		const io = req.app.get('io');
 		io.emit('artifactChange', { eventType: 'delete', artifactId });
@@ -120,6 +132,7 @@ export const deleteArtifact = async (req, res) => {
 				.status(401)
 				.json({ message: 'Invalid token or not authorized' });
 		} else {
+			console.log(error);
 			return res
 				.status(500)
 				.json({ message: 'Something went wrong' });

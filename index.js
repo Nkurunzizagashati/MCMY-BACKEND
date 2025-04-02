@@ -11,9 +11,11 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+const origin2 = 'http://localhost:5173';
+const origin = 'https://mcmv.f-nkurunziz.workers.dev';
 const io = new Server(server, {
 	cors: {
-		origin: 'https://mcmv.f-nkurunziz.workers.dev', // Your frontend URL here
+		origin: origin,
 		methods: ['GET', 'POST'],
 		credentials: true,
 	},
@@ -25,7 +27,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
 	cors({
-		origin: 'https://mcmv.f-nkurunziz.workers.dev',
+		origin: origin,
 		credentials: true,
 		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
 	})

@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+	checkSubscribtionStatus,
 	getScubscribers,
 	subscribe,
 	unSubscribe,
@@ -9,6 +10,7 @@ const router = express.Router();
 
 router.get('/', getScubscribers);
 router.post('/', subscribe);
-router.post('/', unSubscribe);
+router.delete('/', unSubscribe);
+router.get('/status', checkSubscribtionStatus);
 
 export default router;

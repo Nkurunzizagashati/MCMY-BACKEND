@@ -1,6 +1,7 @@
 import { matchedData, validationResult } from 'express-validator';
 import {
 	comparePasswords,
+	getLoggedInUser,
 	hashPassword,
 	sendEmail,
 } from '../utils/helpers.js';
@@ -228,4 +229,24 @@ const verifyAccount = async (req, res) => {
 	}
 };
 
-export { registerUser, loginUser, updateUser, verifyAccount };
+const getUsers = async (req, res) => {
+	try {
+		const users = await User.find();
+
+		console.log('USERS: ', users);
+		return res.status(200).json({ users });
+	} catch (error) {
+		if (error.message.includes('Not authorized')) {
+			return res
+				.status(401)
+				.json({ message: 'Invalid token or not authorized' });
+		} else {
+			console.log(error);
+			return res
+				.status(500)
+				.json({ message: 'Something went wrong' });
+		}
+	}
+};
+
+export { registerUser, loginUser, updateUser, verifyAccount, getUsers };
